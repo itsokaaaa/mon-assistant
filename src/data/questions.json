@@ -1,0 +1,405 @@
+[
+  {
+    "key": "assure_details",
+    "text": "Veuillez renseigner les informations suivantes :",
+    "type": "multi-field",
+    "fields": [
+      {
+        "key": "genre_assure",
+        "label": "Genre de l'assuré",
+        "type": "radio",
+        "options": ["madame", "monsieur", "société"]
+      },
+      {
+        "key": "nom_assure",
+        "label": "Nom de l'assuré ou société",
+        "type": "text"
+      }
+    ],
+    "next": {
+      "default": "structure_type"
+    }
+  },
+  {
+    "key": "structure_type",
+    "text": "Quel est le type de logement ?",
+    "type": "radio",
+    "options": ["Immeuble", "Maison", "Appartement", "Local commercial"],
+    "next": {
+      "Immeuble": "status_assure",
+      "Appartement": "status_assure",
+      "Local commercial": "status_assure",
+      "Maison": "damage_type"
+    }
+  },
+  {
+    "key": "status_assure",
+    "text": "L'assuré est propriétaire ou locataire ?",
+    "type": "radio",
+    "options": ["propriétaire", "locataire"],
+    "next": {
+      "propriétaire": "detailed_damage_type",
+      "locataire": "propietaire_si_locataire"
+    }
+  },
+  {
+    "key": "propietaire_si_locataire",
+    "text": "Veuillez renseigner les informations du propriétaire :",
+    "type": "multi-field",
+    "fields": [
+      {
+        "key": "nom_proprietaire",
+        "label": "Nom du propriétaire ou société",
+        "type": "text"
+      },
+      {
+        "key": "genre_proprietaire",
+        "label": "Genre du propriétaire",
+        "type": "radio",
+        "options": ["madame", "monsieur", "société"]
+      }
+    ],
+    "next": {
+      "default": "bail_status"
+    }
+  },
+  {
+    "key": "bail_status",
+    "text": "Le bail de location est",
+    "type": "radio",
+    "options": ["meublé", "non meublé"],
+    "next": {
+      "default": "damage_type"
+    }
+  },
+  {
+    "key": "damage_type",
+    "text": "Quel est le type de sinistre ?",
+    "type": "radio",
+    "options": ["Degats des Eaux", "Incendie"],
+    "next": {
+      "Degats des Eaux": "detailed_damage_type",
+      "Incendie": "END"
+    }
+  },
+  {
+    "key": "detailed_damage_type",
+    "text": "Sélectionner le type de dégât des eaux",
+    "type": "radio",
+    "options": ["Infiltration", "Débordement", "Fuite", "Joints"],
+    "next": {
+      "Débordement": "debordement",
+      "Fuite": "fuite",
+      "Infiltration": "infiltration",
+      "Joints": "joints"
+    }
+  },
+
+  {
+    "key": "debordement",
+    "text": "Veuillez renseigner les détails du débordement :",
+    "type": "multi-field",
+    "fields": [
+      {
+        "key": "debordementObjet",
+        "label": "Quel est l'objet ou la cause du débordement ?",
+        "type": "radio",
+        "options": ["Baignoire", "Douche", "Lavabo", "Aquarium"]
+      },
+      {
+        "key": "debordementOrigineDamage",
+        "label": "Dommages causés par le débordement",
+        "type": "checkbox",
+        "options": [
+          "par inondation au revêtement de sol",
+          "par remontée capillaire aux revêtements muraux"
+        ]
+      },
+      {
+        "key": "damageDebordement",
+        "label": "Quels types de dommages ont été constatés ?",
+        "type": "checkbox",
+        "options": [
+          "aux embellissements",
+          "à l'immobilier privatif",
+          "au contenu"
+        ]
+      }
+    ],
+    "next": {
+      "default": "is_cause_repaired"
+    }
+  },
+  {
+    "key": "fuite",
+    "text": "Veuillez renseigner les détails de la fuite :",
+    "type": "multi-field",
+    "fields": [
+      {
+        "key": "fuiteKind",
+        "label": "Canalisation ou robinetterie ?",
+        "type": "radio",
+        "options": ["Canalisation", "Robineterie"]
+      },
+      {
+        "key": "fuiteAccess",
+        "label": "La fuite est-elle accessible ou non accessible ?",
+        "type": "radio",
+        "options": ["accessible", "non accessible"]
+      },
+      {
+        "key": "fuiteStatus",
+        "label": "Privative ou collective ?",
+        "type": "radio",
+        "options": ["privative", "collective"]
+      },
+      {
+        "key": "fuiteType",
+        "label": "Quel type de canalisation est concerné ?",
+        "type": "radio",
+        "options": [
+          "d'adduction et distribution d'eau",
+          "évacuation des eaux usées ou vannes",
+          "du chauffage central",
+          "d'évacuation des eaux pluviales"
+        ]
+      },
+      {
+        "key": "damageFuite",
+        "label": "Quels types de dommages ont été constatés ?",
+        "type": "checkbox",
+        "options": [
+          "aux embellissements",
+          "à l'immobilier privatif",
+          "au contenu"
+        ]
+      }
+    ],
+    "next": {
+      "default": "is_cause_repaired"
+    }
+  },
+  {
+    "key": "infiltration",
+    "text": "Veuillez renseigner les détails de l'infiltration :",
+    "type": "multi-field",
+    "fields": [
+      {
+        "key": "infiltrationLocation",
+        "label": "D'où provient l'infiltration ?",
+        "type": "radio",
+        "options": [
+          "de la toiture terrasse",
+          "de la couverture tuile",
+          "de la façade",
+          "par menuiserie exterieur"
+        ]
+      },
+      {
+        "key": "damageInfiltration",
+        "label": "Quels types de dommages ont été constatés ?",
+        "type": "checkbox",
+        "options": [
+          "aux embellissements",
+          "à l'immobilier privatif",
+          "au contenu"
+        ]
+      }
+    ],
+    "next": {
+      "default": "is_cause_repaired"
+    }
+  },
+  {
+    "key": "joints",
+    "text": "Veuillez renseigner les détails concernant les joints ou carrelage :",
+    "type": "multi-field",
+    "fields": [
+      {
+        "key": "jointsOuCarrelage",
+        "label": "Carrelage ou Joints ?",
+        "type": "radio",
+        "options": ["carrelage", "joints"]
+      },
+      {
+        "key": "jointsChoice",
+        "label": "Appareil à effet d'eau concerné",
+        "type": "text"
+      },
+      {
+        "key": "damageJoints",
+        "label": "Quels types de dommages ont été constatés ?",
+        "type": "checkbox",
+        "options": [
+          "aux embellissements",
+          "à l'immobilier privatif",
+          "au contenu"
+        ]
+      }
+    ],
+    "next": {
+      "default": "is_cause_repaired"
+    }
+  },
+  {
+    "key": "is_cause_repaired",
+    "text": "La cause a t elle été réparée ?",
+    "type": "boolean",
+    "next": {
+      "true": "who_repaired",
+      "default": "is_perte_materielle"
+    }
+  },
+  {
+    "key": "who_repaired",
+    "text": "Par qui ? ",
+    "type": "radio",
+    "options": ["l'assuré", "le propriétaire", "le syndic", "le tiers"],
+    "next": {
+      "default": "is_perte_materielle"
+    }
+  },
+  {
+    "key": "is_perte_materielle",
+    "text": "Avez-vous subi une perte immatérielle ?",
+    "type": "boolean",
+    "next": {
+      "default": "humidity_rate"
+    }
+  },
+  {
+    "key": "humidity_rate",
+    "text": "Quel est le taux d'humidité relevé ?",
+    "type": "number",
+    "next": {
+      "default": "is_tiers_endommage"
+    }
+  },
+  {
+    "key": "is_tiers_endommage",
+    "text": "Un tiers a-t-il subi des dégâts ?",
+    "type": "boolean",
+    "next": {
+      "true": "tiers_lese_details",
+      "default": "is_tri"
+    }
+  },
+  {
+    "key": "tiers_lese_details",
+    "text": "Veuillez renseigner les informations suivantes :",
+    "type": "multi-field",
+    "fields": [
+      {
+        "key": "nom_tiers_lese",
+        "label": "Nom du Tiers Lese ou de la société",
+        "type": "text"
+      },
+      {
+        "key": "genre_tiers_lese",
+        "label": "Genre du tiers Lese",
+        "type": "radio",
+        "options": ["madame", "monsieur", "société"]
+      }
+    ],
+    "next": {
+      "default": "qualite_tiers_lese"
+    }
+  },
+  {
+    "key": "qualite_tiers_lese",
+    "text": "Le tiers est-il propriétaire ou locataire ?",
+    "type": "radio",
+    "options": ["propriétaire", "locataire"],
+    "next": {
+      "default": "tiers_lese_etage"
+    }
+  },
+  {
+    "key": "tiers_lese_etage",
+    "text": "Numéro de l'étage",
+    "type": "number",
+    "next": {
+      "default": "tiers_lese_dommages"
+    }
+  },
+  {
+    "key": "tiers_lese_dommages",
+    "text": "Quels dommages ont été causés chez le tiers lese ?",
+    "type": "checkbox",
+    "options": ["aux embellissements", "à l'immobilier privatif", "au contenu"],
+    "next": {
+      "default": "is_tiers_lese_perteimmaterielle"
+    }
+  },
+  {
+    "key": "is_tiers_lese_perteimmaterielle",
+    "text": "Le tiers lese a-t-il subi une perte immatérielle ?",
+    "type": "boolean",
+    "next": {
+      "default": "is_tri"
+    }
+  },
+  {
+    "key": "is_tri",
+    "text": "ACM CIC ?",
+    "type": "boolean",
+    "next": {
+      "true": "convention",
+      "default": "END"
+    }
+  },
+  {
+    "key": "convention",
+    "text": "Convention",
+    "type": "radio",
+    "options": ["IRSI T1", "IRSI T2", "CIDECOP", "CIDEPIEC", "NEANT"],
+    "next": {
+      "default": "is_recours"
+    }
+  },
+  {
+    "key": "is_recours",
+    "text": "Recours",
+    "type": "boolean",
+    "next": {
+      "true": "type_recours",
+      "default": "END"
+    }
+  },
+  {
+    "key": "type_recours",
+    "text": "Type de recours",
+    "type": "radio",
+    "options": ["recours", "action en récupération", "action en remboursement"],
+    "next": {
+      "default": "nature_recours"
+    }
+  },
+  {
+    "key": "nature_recours",
+    "text": "Nature du recours",
+    "type": "radio",
+    "options": ["à exercer", "à subir"],
+    "next": {
+      "default": "operation_exp"
+    }
+  },
+  {
+    "key": "operation_exp",
+    "text": "Opération d'expertise",
+    "type": "radio",
+    "options": ["finie", "en cours"],
+    "next": {
+      "en cours": "operation_exp_en_cours",
+      "default": "END"
+    }
+  },
+  {
+    "key": "operation_exp_en_cours",
+    "text": "Opération en cours",
+    "type": "text",
+    "next": {
+      "default": "END"
+    }
+  }
+]
