@@ -14,6 +14,7 @@ interface Question {
   fields?: Field[];
   options?: string[];
   key: string;
+  next: Record<string, string | undefined>;
 }
 
 interface FormStepProps {
@@ -81,7 +82,7 @@ export default function FormStep({
   };
 
   const isTwoOptions = question.options?.length === 2;
-  const isHorizontalQuestion = !isTwoOptions && question.options?.length > 2;
+  const isHorizontalQuestion = !isTwoOptions && (question.options?.length ?? 0) > 2;
 
   return (
     <VStack spacing={6} align="stretch">

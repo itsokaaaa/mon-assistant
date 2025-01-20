@@ -3,11 +3,13 @@
 import { Box, Button, Heading, Textarea, HStack, VStack } from "@chakra-ui/react";
 import generateReportText from "@/libs/textGenerator";
 import { useState } from "react";
+import { Question } from "./Questionnaire";
 
 interface QuestionnaireEndProps {
-  answers: Record<string, string | string[]>;
-  onRestart: () => void;
-}
+    answers: Record<string, string | string[] | Record<string, string | string[]>>;
+    onRestart: () => void;
+    questions: Question[];
+  }
 
 export default function QuestionnaireEnd({
   answers,

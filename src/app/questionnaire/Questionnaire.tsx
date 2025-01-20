@@ -14,7 +14,7 @@ interface Field {
   options?: string[];
 }
 
-interface Question {
+export interface Question {
   key: string;
   text: string;
   type: "text" | "number" | "radio" | "checkbox" | "multi-field";
@@ -121,7 +121,7 @@ export default function Questionnaire() {
 
       return (
         <Box key={key} textAlign="left" w="100%">
-          <strong>{key}:</strong> {Array.isArray(value) ? value.join(", ") : value || "Non répondu"}
+          <strong>{key}:</strong> {typeof value === "object" ? JSON.stringify(value) : value || "Non répondu"}
         </Box>
       );
     })}

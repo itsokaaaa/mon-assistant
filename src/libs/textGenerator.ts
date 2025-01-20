@@ -1,4 +1,6 @@
-export const generateReportText = (answers: Record<string, string | string[]>): string => {
+export const generateReportText = (
+  answers: Record<string, string | string[] | Record<string, string | string[]>>
+): string => {
   let reportText = "";
 
   // Utility Functions
