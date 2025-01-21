@@ -37,6 +37,8 @@ export default function FormStep({
       ? {}
       : question.type === "checkbox"
       ? []
+      : question.type === "boolean"
+      ? ""
       : ""
   );
 
@@ -49,32 +51,34 @@ export default function FormStep({
       setValue(initialValues);
     } else if (question.type === "checkbox") {
       setValue([]);
+    } else if (question.type === "boolean") {
+      setValue(""); // Default to empty for boolean
     } else {
       setValue("");
     }
   }, [question]);
 
   const handleFieldChange = (key: string, fieldValue: string | string[]) => {
-    setValue((prev) =>
-      typeof prev === "object" && !Array.isArray(prev)
-        ? { ...prev, [key]: fieldValue }
-        : prev
-    );
+    if (typeof value === "object" && !Array.isArray(value)) {
+      setValue({ ...value, [key]: fieldValue });
+    }
   };
 
   const handleCheckboxChange = (key: string, option: string) => {
-    setValue((prev) =>
-      typeof prev === "object" && !Array.isArray(prev)
-        ? {
-            ...prev,
-            [key]: Array.isArray(prev[key])
-              ? prev[key].includes(option)
-                ? prev[key].filter((o) => o !== option)
-                : [...prev[key], option]
-              : [],
-          }
-        : prev
-    );
+    if (typeof value === "object" && !Array.isArray(value)) {
+      const current = (value[key] as string[]) || [];
+      if (current.includes(option)) {
+        setValue({
+          ...value,
+          [key]: current.filter((item) => item !== option),
+        });
+      } else {
+        setValue({
+          ...value,
+          [key]: [...current, option],
+        });
+      }
+    }
   };
 
   const handleNext = () => {
@@ -95,44 +99,29 @@ export default function FormStep({
               <Input
                 placeholder={field.label}
                 value={
-                  typeof value === "object" && !Array.isArray(value)
-                    ? (value[field.key] as string) || ""
+                  typeof value === "object" &&
+                  !Array.isArray(value) &&
+                  field.key in value
+                    ? (value[field.key] as string)
                     : ""
                 }
-                onChange={(e) =>
-                  handleFieldChange(field.key, e.target.value)
-                }
-              />
-            )}
-            {field.type === "number" && (
-              <Input
-                type="number"
-                placeholder={field.label}
-                value={
-                  typeof value === "object" && !Array.isArray(value)
-                    ? (value[field.key] as string) || ""
-                    : ""
-                }
-                onChange={(e) =>
-                  handleFieldChange(field.key, e.target.value)
-                }
+                onChange={(e) => handleFieldChange(field.key, e.target.value)}
               />
             )}
             {field.type === "radio" && (
-              <Wrap spacing={4}>
+              <Wrap spacing={4} justify="flex-start">
                 {field.options?.map((option) => (
                   <Button
                     key={option}
                     variant={
                       typeof value === "object" &&
-                      (value[field.key] as string) === option
+                      !Array.isArray(value) &&
+                      value[field.key] === option
                         ? "solid"
                         : "outline"
                     }
                     colorScheme="blue"
-                    onClick={() =>
-                      handleFieldChange(field.key, option)
-                    }
+                    onClick={() => handleFieldChange(field.key, option)}
                   >
                     {option}
                   </Button>
@@ -140,42 +129,20 @@ export default function FormStep({
               </Wrap>
             )}
             {field.type === "checkbox" && (
-              <Wrap spacing={4}>
+              <Wrap spacing={4} justify="flex-start">
                 {field.options?.map((option) => (
                   <Button
                     key={option}
                     variant={
                       typeof value === "object" &&
+                      !Array.isArray(value) &&
                       Array.isArray(value[field.key]) &&
                       value[field.key].includes(option)
                         ? "solid"
                         : "outline"
                     }
                     colorScheme="blue"
-                    onClick={() =>
-                      handleCheckboxChange(field.key, option)
-                    }
-                  >
-                    {option}
-                  </Button>
-                ))}
-              </Wrap>
-            )}
-            {field.type === "boolean" && (
-              <Wrap spacing={4} justify="center">
-                {["Oui", "Non"].map((option) => (
-                  <Button
-                    key={option}
-                    variant={
-                      typeof value === "object" &&
-                      (value[field.key] as string) === option
-                        ? "solid"
-                        : "outline"
-                    }
-                    colorScheme="blue"
-                    onClick={() =>
-                      handleFieldChange(field.key, option)
-                    }
+                    onClick={() => handleCheckboxChange(field.key, option)}
                   >
                     {option}
                   </Button>
@@ -188,25 +155,26 @@ export default function FormStep({
       {/* Boolean Question */}
       {question.type === "boolean" && (
         <Wrap spacing={4} justify="center">
-          {["Oui", "Non"].map((option) => (
-            <Button
-              key={option}
-              variant={value === option ? "solid" : "outline"}
-              colorScheme="blue"
-              onClick={() => setValue(option)}
-            >
-              {option}
-            </Button>
-          ))}
+          <Button
+            variant={value === "Oui" ? "solid" : "outline"}
+            colorScheme="blue"
+            onClick={() => setValue("Oui")}
+          >
+            Oui
+          </Button>
+          <Button
+            variant={value === "Non" ? "solid" : "outline"}
+            colorScheme="blue"
+            onClick={() => setValue("Non")}
+          >
+            Non
+          </Button>
         </Wrap>
       )}
 
       {/* Radio Question */}
       {question.type === "radio" && (
-        <Wrap
-          spacing={4}
-          justify={isHorizontalQuestion ? "flex-start" : "center"}
-        >
+        <Wrap spacing={4} justify={isHorizontalQuestion ? "flex-start" : "center"}>
           {question.options?.map((option) => (
             <Button
               key={option}
@@ -223,7 +191,7 @@ export default function FormStep({
 
       {/* Checkbox Question */}
       {question.type === "checkbox" && (
-        <Wrap spacing={4}>
+        <Wrap spacing={4} justify="flex-start">
           {question.options?.map((option) => (
             <Button
               key={option}
@@ -233,9 +201,7 @@ export default function FormStep({
                   : "outline"
               }
               colorScheme="blue"
-              onClick={() =>
-                handleCheckboxChange(option as string, option)
-              }
+              onClick={() => handleCheckboxChange("", option)}
             >
               {option}
             </Button>
@@ -283,7 +249,7 @@ export default function FormStep({
               ? (value as string[]).length === 0
               : question.type === "multi-field"
               ? Object.values(value as Record<string, string | string[]>).some(
-                  (v) => (Array.isArray(v) ? v.length === 0 : !v)
+                  (v) => !v || (Array.isArray(v) && v.length === 0)
                 )
               : !value
           }
