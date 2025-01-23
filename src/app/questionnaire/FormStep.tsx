@@ -1,15 +1,17 @@
-import { VStack, HStack, Button, Input, Wrap } from "@chakra-ui/react";
+"use client";
+
+import { VStack, HStack, Button, Input, Wrap, Box } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 
 interface Field {
   key: string;
   label: string;
-  type: "text" | "radio" | "checkbox" | "number" | "boolean";
+  type: "text" | "radio" | "checkbox" | "number" | "boolean" | "files";
   options?: string[];
 }
 
 interface Question {
-  type: "text" | "number" | "radio" | "checkbox" | "boolean" | "multi-field";
+  type: "text" | "number" | "radio" | "checkbox" | "boolean" | "multi-field" | "files";
   text: string;
   fields?: Field[];
   options?: string[];
@@ -19,7 +21,7 @@ interface Question {
 
 interface FormStepProps {
   question: Question;
-  onNext: (value: Record<string, string | string[]> | string | string[]) => void;
+  onNext: (value: Record<string, string | string[]> | string | string[] | File[]) => void;
   onPrevious: () => void;
   isFirstQuestion: boolean;
 }
@@ -31,14 +33,14 @@ export default function FormStep({
   isFirstQuestion,
 }: FormStepProps) {
   const [value, setValue] = useState<
-    Record<string, string | string[]> | string | string[]
+    Record<string, string | string[]> | string | string[] | File[]
   >(
     question.type === "multi-field"
       ? {}
       : question.type === "checkbox"
       ? []
-      : question.type === "boolean"
-      ? ""
+      : question.type === "files"
+      ? []
       : ""
   );
 
@@ -49,10 +51,8 @@ export default function FormStep({
         initialValues[field.key] = field.type === "checkbox" ? [] : "";
       });
       setValue(initialValues);
-    } else if (question.type === "checkbox") {
+    } else if (question.type === "checkbox" || question.type === "files") {
       setValue([]);
-    } else if (question.type === "boolean") {
-      setValue(""); // Default to empty for boolean
     } else {
       setValue("");
     }
@@ -78,6 +78,19 @@ export default function FormStep({
           [key]: [...current, option],
         });
       }
+    } else if (Array.isArray(value)) {
+      // For non-multi-field checkboxes
+      if ((value as string[]).includes(option)) {
+        setValue((value as string[]).filter((item: string) => item !== option));
+      } else {
+        setValue([...(value as string[]), option]);
+      }
+    }
+  };
+
+  const handleFileUpload = (files: FileList | null) => {
+    if (files) {
+      setValue(Array.from(files));
     }
   };
 
@@ -172,6 +185,23 @@ export default function FormStep({
         </Wrap>
       )}
 
+      {/* Files Question */}
+      {question.type === "files" && (
+        <Box>
+          <Input
+            type="file"
+            multiple
+            accept="image/png, image/jpeg, image/jpg, image/gif"
+            onChange={(e) => handleFileUpload(e.target.files)}
+          />
+          {Array.isArray(value) && value.length > 0 && (
+            <Box mt={2}>
+              {value.length} {value.length === 1 ? "fichier téléchargé" : "fichiers téléchargés"}
+            </Box>
+          )}
+        </Box>
+      )}
+
       {/* Radio Question */}
       {question.type === "radio" && (
         <Wrap spacing={4} justify={isHorizontalQuestion ? "flex-start" : "center"}>
@@ -196,12 +226,36 @@ export default function FormStep({
             <Button
               key={option}
               variant={
-                Array.isArray(value) && value.includes(option)
+                Array.isArray(value) && (value as string[]).includes(option)
                   ? "solid"
                   : "outline"
               }
               colorScheme="blue"
-              onClick={() => handleCheckboxChange("", option)}
+              onClick={() =>
+                setValue((prev) => {
+                  if (Array.isArray(prev)) {
+                    if ((prev as string[]).includes(option)) {
+                      return (prev as string[]).filter((item) => item !== option);
+                    } else {
+                      return [...(prev as string[]), option];
+                    }
+                  } else if (typeof prev === "object" && !Array.isArray(prev)) {
+                    const current = (prev[option] as string[]) || [];
+                    if (current.includes(option)) {
+                      return {
+                        ...prev,
+                        [option]: current.filter((item) => item !== option),
+                      };
+                    } else {
+                      return {
+                        ...prev,
+                        [option]: [...current, option],
+                      };
+                    }
+                  }
+                  return prev;
+                })
+              }
             >
               {option}
             </Button>
@@ -236,7 +290,6 @@ export default function FormStep({
           colorScheme="gray"
           onClick={onPrevious}
           isDisabled={isFirstQuestion}
-          opacity={isFirstQuestion ? 0.5 : 1}
         >
           Retour
         </Button>
@@ -247,6 +300,8 @@ export default function FormStep({
           isDisabled={
             question.type === "checkbox"
               ? (value as string[]).length === 0
+              : question.type === "files"
+              ? (value as File[]).length === 0
               : question.type === "multi-field"
               ? Object.values(value as Record<string, string | string[]>).some(
                   (v) => !v || (Array.isArray(v) && v.length === 0)
