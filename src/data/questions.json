@@ -17,14 +17,6 @@
       }
     ],
     "next": {
-      "default": "test"
-    }
-  },
-  {
-    "key": "test",
-    "text": "test",
-    "type": "files",
-    "next": {
       "default": "structure_type"
     }
   },
