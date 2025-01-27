@@ -123,7 +123,7 @@
     "options": ["Appartement assuré", "Appartement tiers"],
     "next": {
       "Appartement tiers": "tiers_responsable_details",
-      "Appartement assuré": "detailed_damage_type"
+      "Appartement assuré": "END"
     }
   },
   {
@@ -184,7 +184,7 @@
     "text": "Numéro de l'étage du tiers responsable",
     "type": "number",
     "next": {
-      "default": "detailed_damage_type"
+      "default": "END"
     }
   },
 
@@ -352,7 +352,7 @@
     "text": "La cause a t elle été réparée ?",
     "type": "boolean",
     "next": {
-      "Oui": "who_repaired",
+      "true": "who_repaired",
       "default": "is_perte_materielle"
     }
   },
@@ -386,7 +386,7 @@
     "text": "Un tiers a-t-il subi des dégâts ?",
     "type": "boolean",
     "next": {
-      "Oui": "tiers_lese_details",
+      "true": "tiers_lese_details",
       "default": "is_tri"
     }
   },
@@ -472,7 +472,7 @@
     "text": "ACM CIC ?",
     "type": "boolean",
     "next": {
-      "Oui": "convention",
+      "true": "convention",
       "default": "END"
     }
   },
@@ -490,7 +490,7 @@
     "text": "Recours",
     "type": "boolean",
     "next": {
-      "Oui": "type_recours",
+      "true": "type_recours",
       "default": "END"
     }
   },
