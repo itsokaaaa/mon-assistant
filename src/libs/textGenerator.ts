@@ -21,7 +21,9 @@ export const generateReportText = (
 
   // assure details
 
-  function getAssureDetails(type: "texte" | "nom"): string {
+  function getAssureDetails(
+    type: "texte" | "nom" | "status" | "proprietaire"
+  ): string {
     const assureDetails = answers["assure_details"] as Record<string, string>;
 
     const nom = assureDetails["nom_assure"] || "Non fourni";
@@ -30,35 +32,48 @@ export const generateReportText = (
         ? "la société"
         : assureDetails.genre_assure || "non spécifié";
 
+    // Préparer les variables pour le propriétaire si l'assuré est locataire
+    let proprietaireNom = "non spécifié";
+    let proprietaireGenre = "non spécifié";
+
+    if (answers["status_assure"] === "locataire") {
+      const proprietaireDetails = answers["propietaire_si_locataire"] as Record<
+        string,
+        string
+      >;
+
+      proprietaireNom =
+        proprietaireDetails["nom_proprietaire"] || "non spécifié";
+      proprietaireGenre =
+        proprietaireDetails.genre_proprietaire === "société"
+          ? "la société"
+          : proprietaireDetails.genre_proprietaire || "non spécifié";
+    }
+
     if (type === "texte") {
       if (answers["status_assure"] === "locataire") {
-        const proprietaireDetails = answers[
-          "propietaire_si_locataire"
-        ] as Record<string, string>;
-        const proprietaireNom =
-          proprietaireDetails["nom_proprietaire"] || "non spécifié";
-        const proprietaireGenre =
-          proprietaireDetails.genre_proprietaire === "société"
-            ? "la société"
-            : proprietaireDetails.genre_proprietaire || "non spécifié";
-        //si locataire
+        // si locataire
         return `${proprietaireGenre} ${proprietaireNom}, occupé par ${genre} ${nom}, locataire au ${getEtage(
           "etage_assure"
         )}.`;
       }
-      //si proprietaire
+      // si propriétaire
       return `${genre} ${nom}, propriétaire occupant au ${getEtage(
         "etage_assure"
       )}.`;
     } else if (type === "nom") {
       return `${genre} ${nom}`;
+    } else if (type === "status") {
+      return "";
+    } else if (type === "proprietaire") {
+      return `${proprietaireGenre} ${proprietaireNom}`;
     }
 
     return "Détails non disponibles.";
   }
 
   //reponsable details
-  function getTiersResponsableDetails(type: "texte" | "nom"): string {
+  function getResponsableDetails(type: "texte" | "nom"): string {
     //assuré est responsable
     if (answers["origineSinistre"] === "Appartement assuré") {
       return getAssureDetails("texte");
@@ -113,10 +128,10 @@ export const generateReportText = (
   }
 
   //lésé details
-  function getTiersLeseDetails(type: "texte" | "nom"): string {
+  function getLeseDetails(type: "texte" | "nom"): string {
     //assuré est lésé
     if (answers["origineSinistre"] === "Appartement tiers") {
-      return getAssureDetails("texte");
+      return getAssureDetails("status");
       //tiers est lésé
     } else {
       const tiersLeseDetails = answers["tiers_lese_details"] as Record<
@@ -172,57 +187,110 @@ export const generateReportText = (
     }
   }
 
-  const texteComplet = getAssureDetails("texte");
-  reportText += texteComplet + "\n";
-  reportText += getTiersResponsableDetails("texte") + "\n";
-  reportText += getTiersLeseDetails("texte") + "\n";
+  function getSyndicName(type: "texte" | "nom"): string {
+    const syndicName =
+      typeof answers["nomSyndic"] === "string" &&
+      answers["nomSyndic"].trim() !== ""
+        ? answers["nomSyndic"]
+        : "Non communiqué";
+
+    if (type === "nom") {
+      return syndicName;
+    } else if (type === "texte") {
+      if (answers["isSyndicConnu"] === "Oui") {
+        return `L'immeuble est administré par le cabinet ${syndicName}.`;
+      } else {
+        return "Le nom du cabinet de syndic n'a pas été communiqué.";
+      }
+    }
+
+    // Return default case (TypeScript requires all cases to return)
+    return "Type inconnu.";
+  }
 
   const getAgeImmeuble = () =>
-    `Le bâtiment est âgé de ${answers["age_immeuble"] || "non spécifié"}.`;
+    `Le bâtiment est âgé de ${answers["ageImmeuble"] || "non spécifié"}.`;
 
   const getRepairStatus = () => {
     if (answers["is_cause_repaired"] === "Oui") {
       const repairedBy = answers["who_repaired"];
-      return `La réparation de l'origine du sinistre a été effectuée par ${
-        repairedBy || "un intervenant non spécifié"
-      }.`;
-    } else {
-      return "À ce jour, l'origine du sinistre n'a pas été réparée.";
+      if (repairedBy === "le syndic") {
+        return `La réparation de l'origine sinistre a été effectuée à la diligence du syndic (${getSyndicName(
+          "nom"
+        )}).`;
+      } else {
+        return `La réparation de l'origine sinistre a été effectuée à la diligence de ${repairedBy}.`;
+      }
     }
   };
-
   const getHumidityRate = () =>
-    `Le taux d'humidité relevé est de ${
-      answers["humidity_rate"] || "non spécifié"
-    }%.`;
+    `Lors de notre passage sur les lieux, le taux d'humidité des supports de l'appartement ${getAssureDetails(
+      "nom"
+    )} était de ${answers["humidity_rate"] || "non spécifié"}%.`;
 
-  const getConventionDetails = () => {
-    const convention = answers["convention"] || "NEANT";
-    return convention === "NEANT"
-      ? "Le sinistre relève des règles du droit commun."
-      : `Le sinistre relève de la convention ${convention}.`;
-  };
-
-  const getDamageTypeDetails = () => {
-    if (answers["damage_type"] === "Degats des Eaux") {
-      const detailedType = answers["detailed_damage_type"];
-      return `Le sinistre est de type dégâts des eaux (${
-        detailedType || "type non spécifié"
-      }).`;
-    }
-    if (answers["damage_type"] === "Incendie") {
-      const fireCause = answers["fire_cause"] || "non spécifiée";
-      return `Le sinistre est de type incendie. Cause: ${fireCause}.`;
+  const getBailText = () => {
+    if (answers["status_assure"] === "locataire") {
+      return `Le bail conclu entre ${getAssureDetails(
+        "proprietaire"
+      )} et ${getAssureDetails("nom")} est un bail de type ${
+        answers["bail_status"]
+      }.`;
     }
     return "";
   };
 
+  const getPerteImmaterielle = () => {
+    if (answers["is_perte_materielle"] === "Oui") {
+      return `Le sinistre a occasionné une perte immaterielle dans l'appartement de ${getAssureDetails(
+        "nom"
+      )}.`;
+    }
+    return "";
+  };
+
+  function getInfiltrationText() {
+    const infiltrationDetails = answers["infiltration"] as Record<
+      string,
+      string
+    >;
+
+    const infiltrationDamages = Array.isArray(
+      infiltrationDetails.damageInfiltration
+    )
+      ? infiltrationDetails.damageInfiltration.join(" et ")
+      : infiltrationDetails.damageInfiltration || "non spécifiés";
+
+    let text = `Infiltration d'eau pluviale au travers ${infiltrationDetails.infiltrationLocation}`;
+
+    if (infiltrationDetails.infiltrationLocation === "de la toiture terrasse") {
+      text += ` de l'immeuble suite à la rupture accidentelle de l'étanchéité qui a occasionné des dommages `;
+    } else if (
+      infiltrationDetails.infiltrationLocation === "de la couverture tuile"
+    ) {
+      text += ` de l'immeuble suite à la rupture accidentelle de l'une d'entre elles qui a occasionné des dommages `;
+    } else if (infiltrationDetails.infiltrationLocation === "de la façade") {
+      text += ` de l'immeuble suite au faiençage de cette dernière qui des occassionné des dommages `;
+    }
+
+    text += `${infiltrationDamages} localisé dans l'appartement de `;
+
+    text += `${getResponsableDetails("texte")} `;
+    text += `${getRepairStatus()} `;
+    text += `${getHumidityRate()} `;
+
+    text += `${getLeseDetails("texte")}`;
+
+    text += `${getBailText()} `;
+    text += `${getAgeImmeuble()} `;
+    text += `${getSyndicName("texte")} `;
+    text += `${getPerteImmaterielle()} `;
+
+    return text;
+  }
+
   // Assemble the Report
-  reportText += `${getAgeImmeuble()}\n`;
-  reportText += `${getRepairStatus()}\n`;
-  reportText += `${getHumidityRate()}\n`;
-  reportText += `${getConventionDetails()}\n`;
-  reportText += `${getDamageTypeDetails()}\n`;
+
+  reportText += `${getInfiltrationText()}\n`;
 
   return reportText.trim();
 };

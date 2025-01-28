@@ -68,7 +68,7 @@
     "text": "Le syndic est t il connu?",
     "type": "boolean",
     "next": {
-      "true": "nomSyndic",
+      "Oui": "nomSyndic",
       "default": "bail_status"
     }
   },
@@ -84,7 +84,7 @@
     "key": "bail_status",
     "text": "Le bail de location est",
     "type": "radio",
-    "options": ["meublé", "non meublé"],
+    "options": ["meublé", "libre"],
     "next": {
       "default": "ageImmeuble"
     }
@@ -360,7 +360,7 @@
     "key": "who_repaired",
     "text": "Par qui ? ",
     "type": "radio",
-    "options": ["l'assuré", "le propriétaire", "le syndic", "le tiers"],
+    "options": ["l'assuré", "le propriétaire", "le syndic", "un tiers"],
     "next": {
       "default": "is_perte_materielle"
     }
