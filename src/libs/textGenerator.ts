@@ -222,6 +222,7 @@ export const generateReportText = (
         return `La réparation de l'origine sinistre a été effectuée à la diligence de ${repairedBy}.`;
       }
     }
+    return "A ce jour, la réparation de l'origine sinistre n'a pas encore été effectuée.";
   };
   const getHumidityRate = () =>
     `Lors de notre passage sur les lieux, le taux d'humidité des supports de l'appartement ${getAssureDetails(

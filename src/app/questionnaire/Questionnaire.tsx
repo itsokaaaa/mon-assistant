@@ -5,6 +5,7 @@ import { Box, Flex, Heading, VStack } from "@chakra-ui/react";
 import questionsData from "@/data/questions.json";
 import FormStep from "./FormStep";
 import QuestionnaireEnd from "./QuestionnaireEnd";
+import { shouldSkipQuestion } from "./skipConditions"; // Import skip logic
 import { incrementReportCount } from "@/libs/reportTracker"; // Import the report tracker
 
 interface Field {
@@ -45,10 +46,16 @@ export default function Questionnaire() {
 
     if (!currentQuestion) return;
 
-    const nextKey =
+    let nextKey =
       typeof answer === "string"
         ? currentQuestion.next?.[answer] || currentQuestion.next?.default
         : currentQuestion.next?.default;
+
+    // Skip logic: find the next question that should not be skipped
+    while (nextKey && shouldSkipQuestion(nextKey, answers)) {
+      const nextQuestion = questions.find((q) => q.key === nextKey);
+      nextKey = nextQuestion?.next?.default;
+    }
 
     if (nextKey) {
       setHistory((prev) => [...prev, nextKey]);
