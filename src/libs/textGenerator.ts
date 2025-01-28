@@ -289,9 +289,36 @@ export const generateReportText = (
     return text;
   }
 
+  function getFuiteText() {
+    const fuiteDetails = answers["fuite"] as Record<string, string>;
+
+    const fuiteDamages = Array.isArray(fuiteDetails.damageFuite)
+      ? fuiteDetails.damageFuite.join(" et ")
+      : fuiteDetails.damageFuite || "non spécifiés";
+
+    let text = `Fuite d'eau dans l'appartement de ${getResponsableDetails(
+      "nom"
+    )} suite à la rupture accidentelle de la canalisation d'alimentation en eau qui a occasionné des dommages ${fuiteDamages}.`;
+
+    text += `${getRepairStatus()} `;
+    text += `${getHumidityRate()} `;
+
+    text += `${getLeseDetails("texte")}`;
+
+    text += `${getBailText()} `;
+    text += `${getAgeImmeuble()} `;
+    text += `${getSyndicName("texte")} `;
+    text += `${getPerteImmaterielle()} `;
+
+    return text;
+  }
   // Assemble the Report
 
-  reportText += `${getInfiltrationText()}\n`;
+  if (answers["origineSinistre"] === "Infiltration") {
+    reportText += `${getInfiltrationText()}\n`;
+  } else if (answers["origineSinistre"] === "Fuite") {
+    reportText += `${getFuiteText()}\n`;
+  }
 
   return reportText.trim();
 };
