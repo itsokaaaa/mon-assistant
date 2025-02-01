@@ -38,7 +38,7 @@
     "type": "radio",
     "options": ["propriétaire", "locataire"],
     "next": {
-      "propriétaire": "bail_status",
+      "propriétaire": "isSyndicConnu",
       "locataire": "propietaire_si_locataire"
     }
   },
