@@ -38,7 +38,7 @@
     "type": "radio",
     "options": ["propriétaire", "locataire"],
     "next": {
-      "propriétaire": "isSyndicConnu",
+      "propriétaire": "bail_status",
       "locataire": "propietaire_si_locataire"
     }
   },
@@ -60,6 +60,15 @@
       }
     ],
     "next": {
+      "default": "bail_status"
+    }
+  },
+  {
+    "key": "bail_status",
+    "text": "Le bail de location est",
+    "type": "radio",
+    "options": ["meublé", "libre"],
+    "next": {
       "default": "isSyndicConnu"
     }
   },
@@ -68,7 +77,7 @@
     "text": "Le syndic est t il connu?",
     "type": "boolean",
     "next": {
-      "Oui": "nomSyndic",
+      "Oui": "ageImmeuble",
       "default": "bail_status"
     }
   },
@@ -80,15 +89,7 @@
       "default": "bail_status"
     }
   },
-  {
-    "key": "bail_status",
-    "text": "Le bail de location est",
-    "type": "radio",
-    "options": ["meublé", "libre"],
-    "next": {
-      "default": "ageImmeuble"
-    }
-  },
+
   {
     "key": "ageImmeuble",
     "text": "Age de l'immeuble",
