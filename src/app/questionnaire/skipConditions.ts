@@ -6,11 +6,10 @@ export function shouldSkipQuestion(
     string | string[] | Record<string, string | string[]> | File[]
   >
 ): boolean {
-  /*
   // Skip 'isSyndicConnu' if 'structure_type' is 'Immeuble'
-  if (nextKey === "isSyndicConnu" && answers["structure_type"] === "Immeuble") {
+  if (nextKey === "isSyndicConnu" && answers["structure_type"] === "Maison") {
     return true;
   }
-  */
+
   return false;
 }
