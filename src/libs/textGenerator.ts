@@ -3,8 +3,6 @@ export const generateReportText = (
 ): string => {
   let reportText = "";
 
-  console.log(answers);
-
   // Utility Functions
 
   const getEtage = (etageKey: string) => {
@@ -105,11 +103,6 @@ export const generateReportText = (
               : proprietaireDetails.genre_proprietaire_tiers_responsable ||
                 "non spécifié";
           //si locataire
-          console.log(`prioprietaire genre : ${proprietaireGenre}`);
-          console.log(`prioprietaire nom : ${proprietaireNom}`);
-
-          console.log(`genre : ${genre}`);
-          console.log(`nom : ${nom}`);
 
           return `${proprietaireGenre} ${proprietaireNom}, occupé par ${genre} ${nom}, locataire au ${getEtage(
             "etage_tiers_responsable"
@@ -131,7 +124,7 @@ export const generateReportText = (
   function getLeseDetails(type: "texte" | "nom"): string {
     //assuré est lésé
     if (answers["origineSinistre"] === "Appartement tiers") {
-      return getAssureDetails("status");
+      return getAssureDetails("texte");
       //tiers est lésé
     } else {
       const tiersLeseDetails = answers["tiers_lese_details"] as Record<
@@ -163,11 +156,6 @@ export const generateReportText = (
               ? answers["tiers_lese_dommages"].join(", ")
               : answers["tiers_lese_dommages"] || "non spécifiés";
             //si locataire
-            console.log(`prioprietaire genre : ${proprietaireGenre}`);
-            console.log(`prioprietaire nom : ${proprietaireNom}`);
-
-            console.log(`genre : ${genre}`);
-            console.log(`nom : ${nom}`);
 
             return `${proprietaireGenre} ${proprietaireNom}, occupé par ${genre} ${nom}, locataire au ${getEtage(
               "etage_tiers_lese"
@@ -186,6 +174,34 @@ export const generateReportText = (
       return "";
     }
   }
+
+  // structure details
+
+  const getStructureDetails = (preposition: "de" | "dans") => {
+    const structureType = answers["structure_type"] || "non spécifié";
+
+    if (preposition === "de") {
+      if (structureType === "Immeuble" || structureType === "Appartement") {
+        return `de l'${structureType.toLowerCase()}`;
+      } else if (structureType === "Maison") {
+        return `de la villa`;
+      } else if (structureType === "Local commercial") {
+        return `du local commercial`;
+      }
+    } else if (preposition === "dans") {
+      if (structureType === "Immeuble" || structureType === "Appartement") {
+        return `dans l'${structureType.toLowerCase()}`;
+      } else if (structureType === "Maison") {
+        return `dans la villa`;
+      } else if (structureType === "Local commercial") {
+        return `dans le local commercial`;
+      }
+    }
+
+    return structureType; // Fallback au cas où
+  };
+
+  // More Utility Functions
 
   function getSyndicName(type: "texte" | "nom"): string {
     const syndicName =
@@ -209,7 +225,7 @@ export const generateReportText = (
   }
 
   const getAgeImmeuble = () =>
-    `Le bâtiment est âgé de ${answers["ageImmeuble"] || "non spécifié"}.`;
+    `Le bâtiment est âgé de ${answers["ageImmeuble"] || ""}.`;
 
   const getRepairStatus = () => {
     if (answers["is_cause_repaired"] === "Oui") {
@@ -225,11 +241,13 @@ export const generateReportText = (
     return "A ce jour, la réparation de l'origine sinistre n'a pas encore été effectuée.";
   };
   const getHumidityRate = () =>
-    `Lors de notre passage sur les lieux, le taux d'humidité des supports de l'appartement ${getAssureDetails(
-      "nom"
-    )} était de ${answers["humidity_rate"] || "non spécifié"}%.`;
+    `Lors de notre passage sur les lieux, le taux d'humidité des supports ${getStructureDetails(
+      "de"
+    )} ${getAssureDetails("nom")} était de ${
+      answers["humidity_rate"] || "non spécifié"
+    }%.`;
 
-  const getBailText = () => {
+  const getBailText = (): string => {
     if (answers["status_assure"] === "locataire") {
       return `Le bail conclu entre ${getAssureDetails(
         "proprietaire"
@@ -242,11 +260,18 @@ export const generateReportText = (
 
   const getPerteImmaterielle = () => {
     if (answers["is_perte_materielle"] === "Oui") {
-      return `Le sinistre a occasionné une perte immaterielle dans l'appartement de ${getAssureDetails(
-        "nom"
-      )}.`;
+      return `Le sinistre a occasionné une perte immaterielle ${getStructureDetails(
+        "de"
+      )} de ${getAssureDetails("nom")}.`;
     }
     return "";
+  };
+
+  const getTRI = () => {
+    if (answers["is_tri"] === "Oui") {
+      return `\n\n\nL'assuré beneficiant de la garanti TRI, nous laissons le soin à la compagnie de statuer sur l'application de cette garantie. `;
+    }
+    return ``;
   };
 
   function getInfiltrationText() {
@@ -279,48 +304,186 @@ export const generateReportText = (
     text += `${getRepairStatus()} `;
     text += `${getHumidityRate()} `;
 
-    text += `${getLeseDetails("texte")}`;
+    //text += `${getLeseDetails("texte")}`;
 
     text += `${getBailText()} `;
     text += `${getAgeImmeuble()} `;
     text += `${getSyndicName("texte")} `;
     text += `${getPerteImmaterielle()} `;
+    text += `${getTRI()} `;
 
     return text;
   }
 
-  function getFuiteText() {
-    const fuiteDetails = answers["fuite"] as Record<string, string>;
+  function getFuiteText(): string {
+    const fuiteDetails = answers["fuite"] as Record<string, string | string[]>;
 
-    const fuiteDamages = Array.isArray(fuiteDetails.damageFuite)
-      ? fuiteDetails.damageFuite.join(" et ")
-      : fuiteDetails.damageFuite || "non spécifiés";
+    const fuiteKind = fuiteDetails["fuiteKind"] || "non spécifié"; // Canalisation or Robinetterie
+    const fuiteAccess = fuiteDetails["fuiteAccess"] || "non spécifiée"; // Accessible or Non accessible
+    const fuiteStatus = fuiteDetails["fuiteStatus"] || "non spécifiée"; // Privative or Collective
+    //const fuiteType = fuiteDetails["fuiteType"] || "non spécifié"; // Eau chaude or Eau froide
 
-    let text = `Fuite d'eau dans l'appartement de ${getResponsableDetails(
-      "nom"
-    )} suite à la rupture accidentelle de la canalisation d'alimentation en eau qui a occasionné des dommages ${fuiteDamages}.`;
+    const fuiteDamages = Array.isArray(answers["damageFuite"])
+      ? answers["damageFuite"].join(" et ")
+      : "non spécifiés";
+
+    let text =
+      fuiteKind === "Robineterie"
+        ? `Fuite des joints de robinetterie accessible`
+        : `Fuite sur canalisation ${fuiteAccess} ${fuiteStatus}`;
+
+    text += ` dans l'appartement de ${getResponsableDetails("texte")}`;
+
+    //chez lui et degats chez toi
+    if (answers["origineSinistre"] === "Appartement tiers") {
+      text += ` Ce qui a occasionné des dommages par infiltration ${fuiteDamages} de l'appartement de ${getAssureDetails(
+        "texte"
+      )} `;
+    }
+
+    //si chez toi et degats chez toi
+    if (answers["origineSinistre"] === "Appartement assuré") {
+      text += ` Ce qui a occasionné des dommages par remontées capillaires ${fuiteDamages} dudit appartement.`;
+    }
+
+    //si chez toi et degats chez lui
+    if (answers["origineSinistre"] === "Appartement assuré") {
+      if (answers["is_tiers_endommage"] === "Oui") {
+        text += ` Ce qui a également occasionné des dommages par infiltration ${fuiteDamages} de l'appartement de ${getLeseDetails(
+          "texte"
+        )} `;
+      }
+    }
 
     text += `${getRepairStatus()} `;
     text += `${getHumidityRate()} `;
-
-    text += `${getLeseDetails("texte")}`;
-
-    text += `${getBailText()} `;
+    text += `${getBailText()}`;
     text += `${getAgeImmeuble()} `;
     text += `${getSyndicName("texte")} `;
     text += `${getPerteImmaterielle()} `;
+    text += `${getTRI()} `;
 
-    return text;
+    return text.trim(); // Ensure no trailing spaces
+  }
+
+  function getJointsText(): string {
+    const jointsDetails = answers["joints"] as Record<
+      string,
+      string | string[]
+    >;
+
+    const jointsKind = jointsDetails["jointsOuCarrelage"] || "non spécifié"; // Joints or Carrelage
+    const jointsText = jointsDetails["jointsChoice"] || "non spécifié"; // Specific text
+    const jointsDamage = Array.isArray(jointsDetails["damageJoints"])
+      ? jointsDetails["damageJoints"].join(" et ")
+      : jointsDetails["damageJoints"] || "non spécifiés";
+
+    let text =
+      jointsKind === "carrelage"
+        ? `Infiltration d'eau d'abblution au travers du carrelage de la ${jointsText} `
+        : `Infiltration d'eau d'abblution au travers du joint périmétrique de la ${jointsText} `;
+
+    text += `dans l'appartement de ${getAssureDetails("texte")}.`;
+
+    //si chez toi et degats chez toi
+    if (answers["origineSinistre"] === "Appartement assuré") {
+      text += ` Ce qui a occasionné des dommages par remontées capillaires ${jointsDamage} dudit appartement.`;
+    }
+
+    //si chez toi et degats chez lui
+    if (answers["origineSinistre"] === "Appartement assuré") {
+      if (answers["is_tiers_endommage"] === "Oui") {
+        text += ` Ce qui a également occasionné des dommages par infiltration ${jointsDamage} de l'appartement de ${getLeseDetails(
+          "texte"
+        )} `;
+      }
+    }
+
+    text += `${getRepairStatus()} `;
+    text += `${getHumidityRate()} `;
+    text += `${getBailText()}`;
+    text += `${getAgeImmeuble()} `;
+    text += `${getSyndicName("texte")} `;
+    text += `${getPerteImmaterielle()} `;
+    text += `${getTRI()} `;
+
+    return text.trim(); // Ensure no trailing spaces
+  }
+
+  function getDebordementText(): string {
+    const debordementDetails = answers["debordement"] as Record<
+      string,
+      string | string[]
+    >;
+
+    const debordementObjet =
+      debordementDetails["debordementObjet"] || "non spécifié"; // Object causing overflow
+    const debordementOrigine = Array.isArray(
+      debordementDetails["debordementOrigineDamage"]
+    )
+      ? debordementDetails["debordementOrigineDamage"].join(" et ")
+      : "non spécifié"; // Origin of overflow
+    const debordementDamage = Array.isArray(
+      debordementDetails["damageDebordement"]
+    )
+      ? debordementDetails["damageDebordement"].join(" et ")
+      : debordementDetails["damageDebordement"] || "non spécifiés";
+
+    let text = `Débordement accidentel d'un appareil à effet d'eau (${debordementObjet}) `;
+
+    text += `dans l'appartement de ${getResponsableDetails("texte")}.`;
+
+    // Case: Origin in a third-party apartment and damage in the insured's apartment
+    if (answers["origineSinistre"] === "Appartement tiers") {
+      text += ` Ce qui a occasionné des dommages par infiltration (${debordementDamage}) de l'appartement de ${getAssureDetails(
+        "texte"
+      )}. `;
+    }
+
+    // Case: Origin in the insured's apartment and damage in the insured's apartment
+    if (answers["origineSinistre"] === "Appartement assuré") {
+      text += ` Ce qui a occasionné des dommages ${debordementDetails} (${debordementDamage}) dudit appartement. `;
+    }
+
+    // Case: Origin in the insured's apartment and damage in a third-party apartment
+    if (
+      answers["origineSinistre"] === "Appartement assuré" &&
+      answers["is_tiers_endommage"] === "Oui"
+    ) {
+      text += ` Ce qui a également occasionné des dommages par infiltration (${debordementDamage}) de l'appartement de ${getLeseDetails(
+        "texte"
+      )}. `;
+    }
+
+    return text.trim(); // Ensure no trailing spaces
   }
   // Assemble the Report
 
-  if (answers["origineSinistre"] === "Infiltration") {
+  if (answers["detailed_damage_type"] === "Infiltration") {
     reportText += `${getInfiltrationText()}\n`;
-  } else if (answers["origineSinistre"] === "Fuite") {
+  } else if (answers["detailed_damage_type"] === "Fuite") {
     reportText += `${getFuiteText()}\n`;
+  } else if (answers["detailed_damage_type"] === "Joints") {
+    reportText += `${getJointsText()}\n`;
+  } else if (answers["detailed_damage_type"] === "Débordement") {
+    reportText += `${getDebordementText()}\n`;
+  } else {
+    reportText += `C'est pas encore fait !`;
   }
+
+  console.log(answers);
+  console.log("origine : " + answers["origineSinistre"]);
+  console.log("assuré : " + getAssureDetails("texte"));
+  console.log("responsable : " + getResponsableDetails("texte"));
+  console.log("lésé : " + getLeseDetails("texte"));
 
   return reportText.trim();
 };
 
 export default generateReportText;
+
+//TOADD
+// - TRI
+// - cas IRSI
+// - parties communes
+// - debordement

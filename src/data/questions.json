@@ -120,7 +120,7 @@
     "key": "origineSinistre",
     "text": "Origine du sinistre dans",
     "type": "radio",
-    "options": ["Appartement assuré", "Appartement tiers"],
+    "options": ["Appartement assuré", "Appartement tiers", "parties communes"],
     "next": {
       "Appartement tiers": "tiers_responsable_details",
       "Appartement assuré": "detailed_damage_type"
@@ -258,29 +258,31 @@
         "label": "Privative ou collective ?",
         "type": "radio",
         "options": ["privative", "collective"]
-      },
-      {
-        "key": "fuiteType",
-        "label": "Quel type de canalisation est concerné ?",
-        "type": "radio",
-        "options": [
-          "d'adduction et distribution d'eau",
-          "évacuation des eaux usées ou vannes",
-          "du chauffage central",
-          "d'évacuation des eaux pluviales"
-        ]
-      },
-      {
-        "key": "damageFuite",
-        "label": "Quels types de dommages ont été constatés ?",
-        "type": "checkbox",
-        "options": [
-          "aux embellissements",
-          "à l'immobilier privatif",
-          "au contenu"
-        ]
       }
     ],
+    "next": {
+      "default": "fuiteType"
+    }
+  },
+  {
+    "key": "fuiteType",
+    "text": "Quel type de canalisation est concerné ?",
+    "type": "radio",
+    "options": [
+      "d'adduction et distribution d'eau",
+      "évacuation des eaux usées ou vannes",
+      "du chauffage central",
+      "d'évacuation des eaux pluviales"
+    ],
+    "next": {
+      "default": "damageFuite"
+    }
+  },
+  {
+    "key": "damageFuite",
+    "text": "Quels types de dommages ont été constatés ?",
+    "type": "checkbox",
+    "options": ["aux embellissements", "à l'immobilier privatif", "au contenu"],
     "next": {
       "default": "is_cause_repaired"
     }
