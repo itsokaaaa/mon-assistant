@@ -77,8 +77,8 @@
     "text": "Le syndic est t il connu?",
     "type": "boolean",
     "next": {
-      "Oui": "ageImmeuble",
-      "default": "nomSyndic"
+      "Oui": "nomSyndic",
+      "default": "ageImmeuble"
     }
   },
   {
@@ -86,7 +86,7 @@
     "text": "Nom du syndic",
     "type": "text",
     "next": {
-      "default": "bail_status"
+      "default": "ageImmeuble"
     }
   },
 
