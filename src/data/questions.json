@@ -78,7 +78,7 @@
     "type": "boolean",
     "next": {
       "Oui": "ageImmeuble",
-      "default": "bail_status"
+      "default": "nomSyndic"
     }
   },
   {
