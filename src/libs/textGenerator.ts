@@ -455,6 +455,8 @@ export const generateReportText = (
       )}. `;
     }
 
+    text += `${debordementOrigine} `;
+
     return text.trim(); // Ensure no trailing spaces
   }
   // Assemble the Report
